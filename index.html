@@ -446,9 +446,8 @@
             setTimeout(() => {
                 const normalizedRotation = currentRotation % 360;
                 const segmentAngle = 45; // 360 / 8 segments
-                // Calculate winning segment: as wheel rotates clockwise, segments move away from pointer
-                // Segment 0 starts at top, so we calculate how many segments have passed
-                const winningIndex = (segments.length - Math.floor(normalizedRotation / segmentAngle)) % segments.length;
+                // Calculate winning segment: adjust by -1 to get the segment the pointer is actually in
+                const winningIndex = (segments.length - 1 - Math.floor(normalizedRotation / segmentAngle) + segments.length) % segments.length;
 
                 resultDiv.textContent = segments[winningIndex].text;
                 resultWrapper.classList.add('show');
