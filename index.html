@@ -19,11 +19,12 @@
             flex-direction: column;
             align-items: center;
             padding: 20px;
+            overflow-x: hidden;
         }
 
         h1 {
             color: #2c3e50;
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             margin-bottom: 30px;
             text-align: center;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
@@ -31,57 +32,94 @@
 
         .wheel-container {
             position: relative;
-            width: 400px;
-            height: 400px;
+            width: 550px;
+            height: 550px;
             margin-bottom: 30px;
         }
 
-        .wheel {
-            width: 100%;
-            height: 100%;
+        .wheel-frame {
+            position: absolute;
+            top: -15px;
+            left: -15px;
+            width: 580px;
+            height: 580px;
             border-radius: 50%;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-            transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+            background: linear-gradient(135deg, #c9a227 0%, #f4e04d 25%, #c9a227 50%, #f4e04d 75%, #c9a227 100%);
+            box-shadow:
+                0 0 0 8px #8b6914,
+                0 0 0 12px #c9a227,
+                0 0 30px rgba(0, 0, 0, 0.4),
+                inset 0 0 20px rgba(0, 0, 0, 0.2);
         }
 
-        .wheel-segment {
+        .wheel-frame::before {
+            content: '';
             position: absolute;
-            width: 50%;
-            height: 50%;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            bottom: 8px;
+            border-radius: 50%;
+            border: 4px solid #8b6914;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .wheel-pegs {
+            position: absolute;
+            top: -15px;
+            left: -15px;
+            width: 580px;
+            height: 580px;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .peg {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: radial-gradient(circle at 30% 30%, #f5f5f5, #888);
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+            transform: translate(-50%, -50%);
+        }
+
+        .canvas-container {
+            position: absolute;
             top: 0;
-            right: 0;
-            transform-origin: bottom left;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            clip-path: polygon(0 100%, 100% 0, 100% 100%);
+            left: 0;
+            width: 550px;
+            height: 550px;
+            border-radius: 50%;
+            overflow: hidden;
         }
 
-        .wheel-segment span {
-            position: absolute;
-            font-size: 11px;
-            font-weight: bold;
-            color: white;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-            transform: rotate(22.5deg) translateX(60px);
-            white-space: nowrap;
-            text-align: center;
+        #wheelCanvas {
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
         }
 
         .pointer {
             position: absolute;
-            top: -15px;
+            top: -25px;
             left: 50%;
             transform: translateX(-50%);
             width: 0;
             height: 0;
+            border-left: 25px solid transparent;
+            border-right: 25px solid transparent;
+            border-top: 50px solid #c0392b;
+            z-index: 10;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.4));
+        }
+
+        .pointer::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: -20px;
             border-left: 20px solid transparent;
             border-right: 20px solid transparent;
-            border-top: 40px solid #e74c3c;
-            z-index: 10;
-            filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.3));
+            border-top: 42px solid #e74c3c;
         }
 
         .center-circle {
@@ -89,32 +127,48 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(145deg, #f5f5f5, #e0e0e0);
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(145deg, #f5f5f5, #d0d0d0);
             border-radius: 50%;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            box-shadow:
+                0 4px 15px rgba(0, 0, 0, 0.3),
+                inset 0 2px 5px rgba(255, 255, 255, 0.8),
+                inset 0 -2px 5px rgba(0, 0, 0, 0.1);
             z-index: 5;
+            border: 4px solid #c9a227;
+        }
+
+        .center-circle::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(145deg, #c9a227, #8b6914);
+            border-radius: 50%;
         }
 
         .spin-button {
-            padding: 15px 40px;
-            font-size: 1.2rem;
+            padding: 18px 50px;
+            font-size: 1.3rem;
             font-weight: bold;
             color: white;
             background: linear-gradient(145deg, #e74c3c, #c0392b);
             border: none;
             border-radius: 50px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
             transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 2px;
         }
 
         .spin-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.5);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.5);
         }
 
         .spin-button:active {
@@ -129,38 +183,57 @@
 
         .result {
             margin-top: 30px;
-            padding: 20px 40px;
-            font-size: 1.5rem;
+            padding: 20px 50px;
+            font-size: 1.8rem;
             font-weight: bold;
             color: #2c3e50;
             background-color: #f8f9fa;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             opacity: 0;
             transition: opacity 0.5s ease;
+            border: 3px solid #c9a227;
         }
 
         .result.show {
             opacity: 1;
         }
 
-        /* Segment colors */
-        .segment-0 { background-color: #3498db; } /* Dr. Guzman - Blue */
-        .segment-1 { background-color: #f39c12; } /* Ask a question - Orange */
-        .segment-2 { background-color: #9b59b6; } /* Dr. Beaufrère - Purple */
-        .segment-3 { background-color: #1abc9c; } /* Ask a question - Teal */
-        .segment-4 { background-color: #e74c3c; } /* Dr. Keller - Red */
-        .segment-5 { background-color: #2ecc71; } /* Ask a question - Green */
-        .segment-6 { background-color: #e91e63; } /* Dr. Hawkins - Pink */
-        .segment-7 { background-color: #00bcd4; } /* Ask a question - Cyan */
+        /* Confetti styles */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            top: -10px;
+            opacity: 0;
+            pointer-events: none;
+            animation: confetti-fall 3s ease-out forwards;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                opacity: 1;
+                top: -10px;
+                transform: translateX(0) rotateZ(0deg);
+            }
+            100% {
+                opacity: 0;
+                top: 100vh;
+                transform: translateX(var(--drift)) rotateZ(720deg);
+            }
+        }
     </style>
 </head>
 <body>
     <h1>The Wheel of Knowledge</h1>
 
     <div class="wheel-container">
+        <div class="wheel-frame"></div>
+        <div class="wheel-pegs" id="wheelPegs"></div>
         <div class="pointer"></div>
-        <div class="wheel" id="wheel"></div>
+        <div class="canvas-container">
+            <canvas id="wheelCanvas" width="550" height="550"></canvas>
+        </div>
         <div class="center-circle"></div>
     </div>
 
@@ -170,38 +243,123 @@
 
     <script>
         const segments = [
-            "Dr. Guzman",
-            "Ask a question",
-            "Dr. Beaufrère",
-            "Ask a question",
-            "Dr. Keller",
-            "Ask a question",
-            "Dr. Hawkins",
-            "Ask a question"
+            { text: "Dr. Guzman", color: "#3498db" },
+            { text: "Ask a question", color: "#f39c12" },
+            { text: "Dr. Beaufrere", color: "#9b59b6" },
+            { text: "Ask a question", color: "#1abc9c" },
+            { text: "Dr. Keller", color: "#e74c3c" },
+            { text: "Ask a question", color: "#2ecc71" },
+            { text: "Dr. Hawkins", color: "#e91e63" },
+            { text: "Ask a question", color: "#00bcd4" }
         ];
 
-        const wheel = document.getElementById('wheel');
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
         const spinButton = document.getElementById('spinButton');
         const resultDiv = document.getElementById('result');
+        const pegsContainer = document.getElementById('wheelPegs');
+
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const radius = 270;
 
         let currentRotation = 0;
         let isSpinning = false;
 
-        // Create wheel segments
-        function createWheel() {
-            const segmentAngle = 360 / segments.length;
+        // Create decorative pegs around the wheel
+        function createPegs() {
+            const pegCount = 24;
+            const pegRadius = 282;
+            for (let i = 0; i < pegCount; i++) {
+                const angle = (i * 360 / pegCount) * Math.PI / 180;
+                const x = 290 + pegRadius * Math.cos(angle);
+                const y = 290 + pegRadius * Math.sin(angle);
+
+                const peg = document.createElement('div');
+                peg.className = 'peg';
+                peg.style.left = x + 'px';
+                peg.style.top = y + 'px';
+                pegsContainer.appendChild(peg);
+            }
+        }
+
+        // Draw the wheel
+        function drawWheel() {
+            const segmentAngle = (2 * Math.PI) / segments.length;
 
             segments.forEach((segment, index) => {
-                const div = document.createElement('div');
-                div.className = `wheel-segment segment-${index}`;
-                div.style.transform = `rotate(${index * segmentAngle - 90}deg)`;
+                const startAngle = index * segmentAngle - Math.PI / 2;
+                const endAngle = startAngle + segmentAngle;
 
-                const span = document.createElement('span');
-                span.textContent = segment;
-                div.appendChild(span);
+                // Draw segment
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.closePath();
+                ctx.fillStyle = segment.color;
+                ctx.fill();
 
-                wheel.appendChild(div);
+                // Draw black border lines
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(
+                    centerX + radius * Math.cos(startAngle),
+                    centerY + radius * Math.sin(startAngle)
+                );
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                // Draw text along radius
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(startAngle + segmentAngle / 2);
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 16px Segoe UI, sans-serif';
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                ctx.shadowBlur = 3;
+                ctx.shadowOffsetX = 1;
+                ctx.shadowOffsetY = 1;
+                ctx.fillText(segment.text, radius - 25, 0);
+                ctx.restore();
             });
+
+            // Draw outer border
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+        }
+
+        // Confetti animation
+        function createConfetti() {
+            const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#e91e63', '#00bcd4', '#1abc9c'];
+            const shapes = ['square', 'circle'];
+
+            for (let i = 0; i < 100; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.setProperty('--drift', (Math.random() - 0.5) * 200 + 'px');
+                    confetti.style.animationDuration = (2 + Math.random() * 2) + 's';
+
+                    if (shapes[Math.floor(Math.random() * shapes.length)] === 'circle') {
+                        confetti.style.borderRadius = '50%';
+                    }
+
+                    confetti.style.width = (5 + Math.random() * 10) + 'px';
+                    confetti.style.height = (5 + Math.random() * 10) + 'px';
+
+                    document.body.appendChild(confetti);
+
+                    setTimeout(() => confetti.remove(), 4000);
+                }, i * 30);
+            }
         }
 
         // Spin the wheel
@@ -216,18 +374,19 @@
             const spinAmount = 1800 + Math.random() * 1800 + Math.random() * 360;
             currentRotation += spinAmount;
 
-            wheel.style.transform = `rotate(${currentRotation}deg)`;
+            canvas.style.transform = `rotate(${currentRotation}deg)`;
 
             // Calculate result after spin
             setTimeout(() => {
                 const normalizedRotation = currentRotation % 360;
                 const segmentAngle = 360 / segments.length;
-                // Pointer is at top (0 degrees), wheel rotates clockwise
-                // We need to find which segment is at the top
                 const winningIndex = Math.floor((360 - normalizedRotation + segmentAngle / 2) / segmentAngle) % segments.length;
 
-                resultDiv.textContent = segments[winningIndex];
+                resultDiv.textContent = segments[winningIndex].text;
                 resultDiv.classList.add('show');
+
+                // Trigger confetti
+                createConfetti();
 
                 isSpinning = false;
                 spinButton.disabled = false;
@@ -235,7 +394,8 @@
         }
 
         // Initialize
-        createWheel();
+        createPegs();
+        drawWheel();
         spinButton.addEventListener('click', spinWheel);
     </script>
 </body>
