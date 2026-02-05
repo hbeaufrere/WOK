@@ -317,7 +317,7 @@
                 ctx.textAlign = 'right';
                 ctx.textBaseline = 'middle';
                 ctx.fillStyle = 'white';
-                ctx.font = 'bold 16px Segoe UI, sans-serif';
+                ctx.font = 'bold 20px Segoe UI, sans-serif';
                 ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
                 ctx.shadowBlur = 3;
                 ctx.shadowOffsetX = 1;
@@ -380,7 +380,10 @@
             setTimeout(() => {
                 const normalizedRotation = currentRotation % 360;
                 const segmentAngle = 360 / segments.length;
-                const winningIndex = Math.floor((360 - normalizedRotation + segmentAngle / 2) / segmentAngle) % segments.length;
+                // Calculate which segment the pointer is pointing at
+                // Pointer is at top (270 degrees), wheel rotates clockwise
+                const pointerAngle = (360 - normalizedRotation + 270) % 360;
+                const winningIndex = Math.floor(pointerAngle / segmentAngle) % segments.length;
 
                 resultDiv.textContent = segments[winningIndex].text;
                 resultDiv.classList.add('show');
