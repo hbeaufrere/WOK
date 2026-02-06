@@ -283,6 +283,26 @@
             }
         }
 
+        /* Golden Rabbit animation */
+        .golden-rabbit {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 200px;
+            z-index: -1;
+            pointer-events: none;
+            animation: runAcross 1.5s linear forwards;
+        }
+
+        @keyframes runAcross {
+            0% {
+                right: -250px;
+            }
+            100% {
+                right: calc(100% + 250px);
+            }
+        }
+
         /* Confetti styles */
         .confetti {
             position: fixed;
@@ -434,6 +454,18 @@
             ctx.stroke();
         }
 
+        // Golden Rabbit animation
+        function runGoldenRabbit() {
+            const rabbit = document.createElement('img');
+            rabbit.src = 'Golden rabbit.png';
+            rabbit.className = 'golden-rabbit';
+            rabbit.alt = 'Golden Rabbit';
+            document.body.appendChild(rabbit);
+
+            // Remove after animation completes
+            setTimeout(() => rabbit.remove(), 1600);
+        }
+
         // Confetti animation
         function createConfetti() {
             const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#e91e63', '#00bcd4', '#1abc9c'];
@@ -492,6 +524,11 @@
                 if (doctorImages[winningText]) {
                     doctorImage.src = doctorImages[winningText];
                     doctorImage.classList.add('show');
+                }
+
+                // Run golden rabbit if "Ask a question" was selected
+                if (winningText === "Ask a question") {
+                    runGoldenRabbit();
                 }
 
                 // Trigger confetti
