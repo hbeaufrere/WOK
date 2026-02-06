@@ -504,32 +504,22 @@
 
             // Random rotation between 5-10 full spins plus random segment
             let spinAmount = 1800 + Math.random() * 1800 + Math.random() * 360;
-            let tempRotation = currentRotation + spinAmount;
-
-            // Calculate what the result would be
-            let normalizedRotation = tempRotation % 360;
             const segmentAngle = 45; // 360 / 8 segments
-            let winningIndex = (segments.length - 1 - Math.floor(normalizedRotation / segmentAngle) + segments.length) % segments.length;
-            let winningText = segments[winningIndex].text;
 
-            // If same as last result, add extra rotation to get a different segment
-            if (winningText === lastResult) {
-                // Add 45-315 degrees (1-7 segments) to ensure different result
-                const extraRotation = 45 + Math.floor(Math.random() * 7) * 45;
-                spinAmount += extraRotation;
-                tempRotation = currentRotation + spinAmount;
-                normalizedRotation = tempRotation % 360;
-                winningIndex = (segments.length - 1 - Math.floor(normalizedRotation / segmentAngle) + segments.length) % segments.length;
-                winningText = segments[winningIndex].text;
+            // Function to calculate winning text from rotation
+            function getWinningText(rotation) {
+                const normalized = rotation % 360;
+                const index = (segments.length - 1 - Math.floor(normalized / segmentAngle) + segments.length) % segments.length;
+                return segments[index].text;
+            }
 
-                // Double check - if still same (for "Ask a question"), add one more segment
-                if (winningText === lastResult) {
-                    spinAmount += 45;
-                    tempRotation = currentRotation + spinAmount;
-                    normalizedRotation = tempRotation % 360;
-                    winningIndex = (segments.length - 1 - Math.floor(normalizedRotation / segmentAngle) + segments.length) % segments.length;
-                    winningText = segments[winningIndex].text;
-                }
+            // Keep adjusting until we get a different result from last time
+            let predictedResult = getWinningText(currentRotation + spinAmount);
+            let attempts = 0;
+            while (predictedResult === lastResult && attempts < 8) {
+                spinAmount += 45; // Move one segment
+                predictedResult = getWinningText(currentRotation + spinAmount);
+                attempts++;
             }
 
             currentRotation += spinAmount;
@@ -537,10 +527,7 @@
 
             // Calculate result after spin
             setTimeout(() => {
-                // Recalculate to ensure accuracy
-                const finalRotation = currentRotation % 360;
-                const finalIndex = (segments.length - 1 - Math.floor(finalRotation / segmentAngle) + segments.length) % segments.length;
-                const finalText = segments[finalIndex].text;
+                const finalText = getWinningText(currentRotation);
 
                 lastResult = finalText;
                 resultDiv.textContent = finalText;
