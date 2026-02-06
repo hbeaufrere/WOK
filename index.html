@@ -260,6 +260,29 @@
             min-width: 250px;
         }
 
+        .doctor-image {
+            margin-top: 20px;
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 50%;
+            display: none;
+            animation: wiggle 0.5s ease-in-out infinite;
+        }
+
+        .doctor-image.show {
+            display: block;
+        }
+
+        @keyframes wiggle {
+            0%, 100% {
+                transform: rotate(-3deg);
+            }
+            50% {
+                transform: rotate(3deg);
+            }
+        }
+
         /* Confetti styles */
         .confetti {
             position: fixed;
@@ -304,6 +327,7 @@
             <div class="result-wrapper" id="resultWrapper">
                 <div class="result" id="result"></div>
             </div>
+            <img id="doctorImage" class="doctor-image" src="" alt="Doctor">
         </div>
     </div>
 
@@ -325,6 +349,15 @@
         const resultDiv = document.getElementById('result');
         const resultWrapper = document.getElementById('resultWrapper');
         const pegsContainer = document.getElementById('wheelPegs');
+        const doctorImage = document.getElementById('doctorImage');
+
+        // Map doctor names to image files
+        const doctorImages = {
+            "Dr. Guzman": "Guzman.png",
+            "Dr. Beaufrere": "Beaufrere.png",
+            "Dr. Keller": "Keller.png",
+            "Dr. Hawkins": "Hawkins.png"
+        };
 
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
@@ -436,6 +469,7 @@
             isSpinning = true;
             spinButton.disabled = true;
             resultWrapper.classList.remove('show');
+            doctorImage.classList.remove('show');
 
             // Random rotation between 5-10 full spins plus random segment
             const spinAmount = 1800 + Math.random() * 1800 + Math.random() * 360;
@@ -450,8 +484,15 @@
                 // Calculate winning segment: adjust by -1 to get the segment the pointer is actually in
                 const winningIndex = (segments.length - 1 - Math.floor(normalizedRotation / segmentAngle) + segments.length) % segments.length;
 
-                resultDiv.textContent = segments[winningIndex].text;
+                const winningText = segments[winningIndex].text;
+                resultDiv.textContent = winningText;
                 resultWrapper.classList.add('show');
+
+                // Show doctor image if a doctor was selected
+                if (doctorImages[winningText]) {
+                    doctorImage.src = doctorImages[winningText];
+                    doctorImage.classList.add('show');
+                }
 
                 // Trigger confetti
                 createConfetti();
