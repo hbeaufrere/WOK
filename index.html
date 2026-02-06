@@ -286,20 +286,19 @@
         /* Golden Rabbit animation */
         .golden-rabbit {
             position: fixed;
-            top: 50%;
-            transform: translateY(-50%);
-            height: 200px;
-            z-index: -1;
+            bottom: 50px;
+            height: 150px;
+            z-index: 100;
             pointer-events: none;
-            animation: runAcross 1.5s linear forwards;
+            animation: runAcross 2s linear forwards;
         }
 
         @keyframes runAcross {
             0% {
-                right: -250px;
+                right: -200px;
             }
             100% {
-                right: calc(100% + 250px);
+                right: calc(100% + 200px);
             }
         }
 
