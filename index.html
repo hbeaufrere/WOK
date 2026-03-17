@@ -781,21 +781,34 @@
             }
         }
 
-        // Weighted random selection
-        function weightedRandomResult() {
-            const roll = Math.random() * 100;
-
-            // Check clinicians first
-            let cumulative = 0;
+        // Weighted random selection, excluding a specific result if needed
+        function weightedRandomResult(exclude) {
+            // Build weight map for all options
+            const options = [];
             for (const c of clinicians) {
-                cumulative += clinicianWeights[c.name];
-                if (roll < cumulative) {
-                    return c.name;
-                }
+                options.push({ name: c.name, weight: clinicianWeights[c.name] });
+            }
+            options.push({ name: "Ask a question", weight: askWeight });
+
+            // Filter out excluded option and compute remaining total
+            const available = exclude ? options.filter(o => o.name !== exclude) : options;
+            const totalWeight = available.reduce((sum, o) => sum + o.weight, 0);
+
+            if (totalWeight <= 0) {
+                // All weight was on the excluded option; fall back to any option
+                return options[Math.floor(Math.random() * options.length)].name;
             }
 
-            // Remainder is "Ask a question"
-            return "Ask a question";
+            // Pick proportionally from available options
+            const roll = Math.random() * totalWeight;
+            let cumulative = 0;
+            for (const o of available) {
+                cumulative += o.weight;
+                if (roll < cumulative) {
+                    return o.name;
+                }
+            }
+            return available[available.length - 1].name;
         }
 
         function spinWheel() {
@@ -808,13 +821,8 @@
 
             const segmentAngle = 360 / segments.length; // 45 degrees
 
-            // Choose weighted result (but avoid repeats)
-            let chosenResult = weightedRandomResult();
-            let attempts = 0;
-            while (chosenResult === lastResult && attempts < 20) {
-                chosenResult = weightedRandomResult();
-                attempts++;
-            }
+            // Choose weighted result, avoiding consecutive repeats
+            const chosenResult = weightedRandomResult(lastResult);
 
             // Find a segment index matching the chosen result
             const matchingIndices = [];
