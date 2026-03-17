@@ -94,11 +94,25 @@
             cursor: pointer;
         }
 
-        .slider-value {
-            width: 50px;
-            text-align: right;
+        .slider-input {
+            width: 65px;
+            padding: 4px 6px;
+            font-size: 0.95rem;
             font-weight: bold;
             color: #2c3e50;
+            text-align: center;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            outline: none;
+        }
+
+        .slider-input:focus {
+            border-color: #3498db;
+        }
+
+        .slider-pct {
+            font-weight: bold;
+            color: #888;
         }
 
         .total-display {
@@ -478,13 +492,13 @@
 
     <!-- Setup Screen: Clinician probability selection -->
     <div class="setup-screen" id="setupScreen">
-        <h2>Set Clinician Probabilities</h2>
+        <h2>Set Probabilities</h2>
         <p class="setup-info">
-            "Ask a question" always has a 50% chance. The remaining 50% is split among the clinicians below.<br>
-            Adjust the sliders so the clinician percentages add up to exactly 50%.
+            Adjust the probability for each option using the sliders or by typing a value.<br>
+            All percentages must add up to exactly 100%.
         </p>
         <div class="clinician-sliders" id="clinicianSliders"></div>
-        <div class="total-display" id="totalDisplay">Total: 0% / 50%</div>
+        <div class="total-display" id="totalDisplay">Total: 0% / 100%</div>
         <button class="start-button" id="startButton" disabled>Let's Go!</button>
     </div>
 
@@ -522,56 +536,83 @@
 
         const askColors = ["#f39c12", "#1abc9c", "#2ecc71", "#00bcd4"];
 
+        // All setup items: clinicians + Ask a question
+        const setupItems = [
+            ...clinicians.map(c => ({ name: c.name, color: c.color })),
+            { name: "Ask a question", color: "#f39c12" }
+        ];
+        const defaultPcts = [10, 10, 10, 10, 60]; // Default percentages
+
         // Probability weights (will be set by setup screen)
         let clinicianWeights = {};
+        let askWeight = 60;
 
         // Build setup screen sliders
         const slidersContainer = document.getElementById('clinicianSliders');
         const totalDisplay = document.getElementById('totalDisplay');
         const startButton = document.getElementById('startButton');
 
-        clinicians.forEach((c, i) => {
+        setupItems.forEach((item, i) => {
             const row = document.createElement('div');
             row.className = 'slider-row';
 
             const label = document.createElement('span');
             label.className = 'slider-label';
-            label.textContent = c.name;
-            label.style.color = c.color;
+            label.textContent = item.name;
+            label.style.color = item.color;
 
             const slider = document.createElement('input');
             slider.type = 'range';
             slider.min = '0';
-            slider.max = '50';
-            slider.value = '12.5';
+            slider.max = '100';
+            slider.value = String(defaultPcts[i]);
             slider.step = '0.5';
             slider.id = 'slider-' + i;
-            slider.style.accentColor = c.color;
-            slider.addEventListener('input', updateTotal);
+            slider.style.accentColor = item.color;
+            slider.addEventListener('input', function() {
+                document.getElementById('input-' + i).value = this.value;
+                updateTotal();
+            });
 
-            const valueSpan = document.createElement('span');
-            valueSpan.className = 'slider-value';
-            valueSpan.id = 'value-' + i;
-            valueSpan.textContent = '12.5%';
+            const numInput = document.createElement('input');
+            numInput.type = 'number';
+            numInput.className = 'slider-input';
+            numInput.min = '0';
+            numInput.max = '100';
+            numInput.step = '0.5';
+            numInput.value = String(defaultPcts[i]);
+            numInput.id = 'input-' + i;
+            numInput.addEventListener('input', function() {
+                let val = parseFloat(this.value);
+                if (isNaN(val)) val = 0;
+                if (val < 0) val = 0;
+                if (val > 100) val = 100;
+                document.getElementById('slider-' + i).value = val;
+                updateTotal();
+            });
+
+            const pctLabel = document.createElement('span');
+            pctLabel.className = 'slider-pct';
+            pctLabel.textContent = '%';
 
             row.appendChild(label);
             row.appendChild(slider);
-            row.appendChild(valueSpan);
+            row.appendChild(numInput);
+            row.appendChild(pctLabel);
             slidersContainer.appendChild(row);
         });
 
         function updateTotal() {
             let total = 0;
-            clinicians.forEach((c, i) => {
-                const val = parseFloat(document.getElementById('slider-' + i).value);
-                document.getElementById('value-' + i).textContent = val + '%';
+            setupItems.forEach((item, i) => {
+                const val = parseFloat(document.getElementById('slider-' + i).value) || 0;
                 total += val;
             });
 
             total = Math.round(total * 10) / 10;
-            totalDisplay.textContent = 'Total: ' + total + '% / 50%';
+            totalDisplay.textContent = 'Total: ' + total + '% / 100%';
 
-            if (Math.abs(total - 50) < 0.01) {
+            if (Math.abs(total - 100) < 0.01) {
                 totalDisplay.className = 'total-display total-ok';
                 startButton.disabled = false;
             } else {
@@ -585,8 +626,10 @@
         startButton.addEventListener('click', function() {
             // Save weights
             clinicians.forEach((c, i) => {
-                clinicianWeights[c.name] = parseFloat(document.getElementById('slider-' + i).value);
+                clinicianWeights[c.name] = parseFloat(document.getElementById('slider-' + i).value) || 0;
             });
+            // "Ask a question" is the last setup item
+            askWeight = parseFloat(document.getElementById('slider-' + (setupItems.length - 1)).value) || 0;
 
             // Hide setup, show game
             document.getElementById('setupScreen').style.display = 'none';
@@ -742,13 +785,8 @@
         function weightedRandomResult() {
             const roll = Math.random() * 100;
 
-            // 50% chance: Ask a question
-            if (roll < 50) {
-                return "Ask a question";
-            }
-
-            // Remaining 50%: pick clinician based on their weights
-            let cumulative = 50;
+            // Check clinicians first
+            let cumulative = 0;
             for (const c of clinicians) {
                 cumulative += clinicianWeights[c.name];
                 if (roll < cumulative) {
@@ -756,8 +794,8 @@
                 }
             }
 
-            // Fallback (shouldn't happen)
-            return clinicians[clinicians.length - 1].name;
+            // Remainder is "Ask a question"
+            return "Ask a question";
         }
 
         function spinWheel() {
