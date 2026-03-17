@@ -301,6 +301,26 @@
             }
         }
 
+        .fullscreen-button {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #2c3e50;
+            background: #f0f0f0;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            cursor: pointer;
+            z-index: 200;
+            transition: all 0.2s ease;
+        }
+
+        .fullscreen-button:hover {
+            background: #e0e0e0;
+        }
+
         /* Confetti styles */
         .confetti {
             position: fixed;
@@ -327,6 +347,7 @@
     </style>
 </head>
 <body>
+    <button class="fullscreen-button" id="fullscreenBtn" onclick="toggleFullscreen()">&#x26F6; Fullscreen</button>
     <h1>The Wheel of Knowledge<sup style="font-size: 0.4em; vertical-align: super;">TM</sup></h1>
 
     <div class="main-content">
@@ -551,6 +572,25 @@
                 spinButton.disabled = false;
             }, 4000);
         }
+
+        // Fullscreen toggle
+        function toggleFullscreen() {
+            const btn = document.getElementById('fullscreenBtn');
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+                btn.textContent = '\u2716 Exit Fullscreen';
+            } else {
+                document.exitFullscreen();
+                btn.textContent = '\u26F6 Fullscreen';
+            }
+        }
+
+        document.addEventListener('fullscreenchange', () => {
+            const btn = document.getElementById('fullscreenBtn');
+            if (!document.fullscreenElement) {
+                btn.textContent = '\u26F6 Fullscreen';
+            }
+        });
 
         // Initialize
         createPegs();
