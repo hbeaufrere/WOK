@@ -30,6 +30,132 @@
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         }
 
+        /* Setup screen styles */
+        .setup-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+            margin-top: 20px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .setup-screen h2 {
+            color: #2c3e50;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        .setup-info {
+            color: #666;
+            font-size: 0.95rem;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .clinician-sliders {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .slider-label {
+            width: 220px;
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 1rem;
+        }
+
+        .slider-row input[type="range"] {
+            flex: 1;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #ddd;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .slider-row input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+        }
+
+        .slider-value {
+            width: 50px;
+            text-align: right;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .total-display {
+            font-size: 1.1rem;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .total-ok {
+            color: #27ae60;
+            background: #eafaf1;
+            border: 2px solid #27ae60;
+        }
+
+        .total-bad {
+            color: #e74c3c;
+            background: #fdedec;
+            border: 2px solid #e74c3c;
+        }
+
+        .start-button {
+            padding: 18px 50px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(145deg, #27ae60, #1e8449);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .start-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.5);
+        }
+
+        .start-button:disabled {
+            background: linear-gradient(145deg, #95a5a6, #7f8c8d);
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* Game screen (hidden initially) */
+        .game-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
         .main-content {
             display: flex;
             align-items: center;
@@ -350,63 +476,171 @@
     <button class="fullscreen-button" id="fullscreenBtn" onclick="toggleFullscreen()">&#x26F6; Fullscreen</button>
     <h1>The Wheel of Knowledge<sup style="font-size: 0.4em; vertical-align: super;">TM</sup></h1>
 
-    <div class="main-content">
-        <div class="wheel-container">
-            <div class="wheel-frame"></div>
-            <div class="wheel-pegs" id="wheelPegs"></div>
-            <div class="pointer"></div>
-            <div class="canvas-container">
-                <canvas id="wheelCanvas" width="550" height="550"></canvas>
-            </div>
-            <div class="center-circle"></div>
-        </div>
+    <!-- Setup Screen: Clinician probability selection -->
+    <div class="setup-screen" id="setupScreen">
+        <h2>Set Clinician Probabilities</h2>
+        <p class="setup-info">
+            "Ask a question" always has a 50% chance. The remaining 50% is split among the clinicians below.<br>
+            Adjust the sliders so the clinician percentages add up to exactly 50%.
+        </p>
+        <div class="clinician-sliders" id="clinicianSliders"></div>
+        <div class="total-display" id="totalDisplay">Total: 0% / 50%</div>
+        <button class="start-button" id="startButton" disabled>Let's Go!</button>
+    </div>
 
-        <div class="controls">
-            <button class="spin-button" id="spinButton">PEDAGOGY IN MOTION</button>
-            <div class="result-wrapper" id="resultWrapper">
-                <div class="result" id="result"></div>
+    <!-- Game Screen (hidden initially) -->
+    <div class="game-screen" id="gameScreen">
+        <div class="main-content">
+            <div class="wheel-container">
+                <div class="wheel-frame"></div>
+                <div class="wheel-pegs" id="wheelPegs"></div>
+                <div class="pointer"></div>
+                <div class="canvas-container">
+                    <canvas id="wheelCanvas" width="550" height="550"></canvas>
+                </div>
+                <div class="center-circle"></div>
             </div>
-            <img id="doctorImage" class="doctor-image" src="" alt="Doctor">
+
+            <div class="controls">
+                <button class="spin-button" id="spinButton">PEDAGOGY IN MOTION</button>
+                <div class="result-wrapper" id="resultWrapper">
+                    <div class="result" id="result"></div>
+                </div>
+                <img id="doctorImage" class="doctor-image" src="" alt="Doctor">
+            </div>
         </div>
     </div>
 
     <script>
-        const segments = [
-            { text: "Dr. Guzman", color: "#3498db" },
-            { text: "Ask a question", color: "#f39c12" },
-            { text: "Dr. Beaufrere", color: "#9b59b6" },
-            { text: "Ask a question", color: "#1abc9c" },
-            { text: "Dr. Keller", color: "#e74c3c" },
-            { text: "Ask a question", color: "#2ecc71" },
-            { text: "Dr. Hawkins", color: "#e91e63" },
-            { text: "Ask a question", color: "#00bcd4" }
+        // Clinician definitions with new names
+        const clinicians = [
+            { name: "Guzman's 2 cents", color: "#3498db", image: "Guzman.png" },
+            { name: "Naked mole rat factoids", color: "#9b59b6", image: "Beaufrere.png" },
+            { name: "Keller Time", color: "#e74c3c", image: "Keller.png" },
+            { name: "Dr. Hawkins' last stand", color: "#e91e63", image: "Hawkins.png" }
         ];
 
-        const canvas = document.getElementById('wheelCanvas');
-        const ctx = canvas.getContext('2d');
-        const spinButton = document.getElementById('spinButton');
-        const resultDiv = document.getElementById('result');
-        const resultWrapper = document.getElementById('resultWrapper');
-        const pegsContainer = document.getElementById('wheelPegs');
-        const doctorImage = document.getElementById('doctorImage');
+        const askColors = ["#f39c12", "#1abc9c", "#2ecc71", "#00bcd4"];
 
-        // Map doctor names to image files
-        const doctorImages = {
-            "Dr. Guzman": "Guzman.png",
-            "Dr. Beaufrere": "Beaufrere.png",
-            "Dr. Keller": "Keller.png",
-            "Dr. Hawkins": "Hawkins.png"
-        };
+        // Probability weights (will be set by setup screen)
+        let clinicianWeights = {};
 
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
-        const radius = 270;
+        // Build setup screen sliders
+        const slidersContainer = document.getElementById('clinicianSliders');
+        const totalDisplay = document.getElementById('totalDisplay');
+        const startButton = document.getElementById('startButton');
 
+        clinicians.forEach((c, i) => {
+            const row = document.createElement('div');
+            row.className = 'slider-row';
+
+            const label = document.createElement('span');
+            label.className = 'slider-label';
+            label.textContent = c.name;
+            label.style.color = c.color;
+
+            const slider = document.createElement('input');
+            slider.type = 'range';
+            slider.min = '0';
+            slider.max = '50';
+            slider.value = '12.5';
+            slider.step = '0.5';
+            slider.id = 'slider-' + i;
+            slider.style.accentColor = c.color;
+            slider.addEventListener('input', updateTotal);
+
+            const valueSpan = document.createElement('span');
+            valueSpan.className = 'slider-value';
+            valueSpan.id = 'value-' + i;
+            valueSpan.textContent = '12.5%';
+
+            row.appendChild(label);
+            row.appendChild(slider);
+            row.appendChild(valueSpan);
+            slidersContainer.appendChild(row);
+        });
+
+        function updateTotal() {
+            let total = 0;
+            clinicians.forEach((c, i) => {
+                const val = parseFloat(document.getElementById('slider-' + i).value);
+                document.getElementById('value-' + i).textContent = val + '%';
+                total += val;
+            });
+
+            total = Math.round(total * 10) / 10;
+            totalDisplay.textContent = 'Total: ' + total + '% / 50%';
+
+            if (Math.abs(total - 50) < 0.01) {
+                totalDisplay.className = 'total-display total-ok';
+                startButton.disabled = false;
+            } else {
+                totalDisplay.className = 'total-display total-bad';
+                startButton.disabled = true;
+            }
+        }
+
+        updateTotal();
+
+        startButton.addEventListener('click', function() {
+            // Save weights
+            clinicians.forEach((c, i) => {
+                clinicianWeights[c.name] = parseFloat(document.getElementById('slider-' + i).value);
+            });
+
+            // Hide setup, show game
+            document.getElementById('setupScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'flex';
+
+            // Initialize the wheel
+            initGame();
+        });
+
+        // ---- Game logic ----
+        const segments = []; // Built dynamically based on weights
+        const doctorImages = {};
+
+        let canvas, ctx, spinButton, resultDiv, resultWrapper, pegsContainer, doctorImage;
+        let centerX, centerY, radius;
         let currentRotation = 0;
         let isSpinning = false;
         let lastResult = null;
 
-        // Create decorative pegs around the wheel
+        function initGame() {
+            // Build segments: alternating clinician / ask-a-question
+            clinicians.forEach((c, i) => {
+                segments.push({ text: c.name, color: c.color });
+                doctorImages[c.name] = c.image;
+            });
+
+            // Interleave with "Ask a question"
+            const finalSegments = [];
+            clinicians.forEach((c, i) => {
+                finalSegments.push({ text: c.name, color: c.color });
+                finalSegments.push({ text: "Ask a question", color: askColors[i] });
+            });
+
+            // Replace segments array contents
+            segments.length = 0;
+            finalSegments.forEach(s => segments.push(s));
+
+            canvas = document.getElementById('wheelCanvas');
+            ctx = canvas.getContext('2d');
+            spinButton = document.getElementById('spinButton');
+            resultDiv = document.getElementById('result');
+            resultWrapper = document.getElementById('resultWrapper');
+            pegsContainer = document.getElementById('wheelPegs');
+            doctorImage = document.getElementById('doctorImage');
+
+            centerX = canvas.width / 2;
+            centerY = canvas.height / 2;
+            radius = 270;
+
+            createPegs();
+            drawWheel();
+            spinButton.addEventListener('click', spinWheel);
+        }
+
         function createPegs() {
             const pegCount = 24;
             const pegRadius = 282;
@@ -423,7 +657,6 @@
             }
         }
 
-        // Draw the wheel
         function drawWheel() {
             const segmentAngle = (2 * Math.PI) / segments.length;
 
@@ -431,7 +664,6 @@
                 const startAngle = index * segmentAngle - Math.PI / 2;
                 const endAngle = startAngle + segmentAngle;
 
-                // Draw segment
                 ctx.beginPath();
                 ctx.moveTo(centerX, centerY);
                 ctx.arc(centerX, centerY, radius, startAngle, endAngle);
@@ -439,7 +671,6 @@
                 ctx.fillStyle = segment.color;
                 ctx.fill();
 
-                // Draw black border lines
                 ctx.beginPath();
                 ctx.moveTo(centerX, centerY);
                 ctx.lineTo(
@@ -450,14 +681,13 @@
                 ctx.lineWidth = 3;
                 ctx.stroke();
 
-                // Draw text along radius
                 ctx.save();
                 ctx.translate(centerX, centerY);
                 ctx.rotate(startAngle + segmentAngle / 2);
                 ctx.textAlign = 'right';
                 ctx.textBaseline = 'middle';
                 ctx.fillStyle = 'white';
-                ctx.font = 'bold 20px Segoe UI, sans-serif';
+                ctx.font = 'bold 18px Segoe UI, sans-serif';
                 ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
                 ctx.shadowBlur = 3;
                 ctx.shadowOffsetX = 1;
@@ -466,7 +696,6 @@
                 ctx.restore();
             });
 
-            // Draw outer border
             ctx.beginPath();
             ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
             ctx.strokeStyle = '#000';
@@ -474,19 +703,15 @@
             ctx.stroke();
         }
 
-        // Golden Rabbit animation
         function runGoldenRabbit() {
             const rabbit = document.createElement('img');
             rabbit.src = 'Golden rabbit.png';
             rabbit.className = 'golden-rabbit';
             rabbit.alt = 'Golden Rabbit';
             document.body.appendChild(rabbit);
-
-            // Remove after animation completes
             setTimeout(() => rabbit.remove(), 1600);
         }
 
-        // Confetti animation
         function createConfetti() {
             const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#e91e63', '#00bcd4', '#1abc9c'];
             const shapes = ['square', 'circle'];
@@ -508,13 +733,33 @@
                     confetti.style.height = (5 + Math.random() * 10) + 'px';
 
                     document.body.appendChild(confetti);
-
                     setTimeout(() => confetti.remove(), 4000);
                 }, i * 30);
             }
         }
 
-        // Spin the wheel
+        // Weighted random selection
+        function weightedRandomResult() {
+            const roll = Math.random() * 100;
+
+            // 50% chance: Ask a question
+            if (roll < 50) {
+                return "Ask a question";
+            }
+
+            // Remaining 50%: pick clinician based on their weights
+            let cumulative = 50;
+            for (const c of clinicians) {
+                cumulative += clinicianWeights[c.name];
+                if (roll < cumulative) {
+                    return c.name;
+                }
+            }
+
+            // Fallback (shouldn't happen)
+            return clinicians[clinicians.length - 1].name;
+        }
+
         function spinWheel() {
             if (isSpinning) return;
 
@@ -523,49 +768,56 @@
             resultWrapper.classList.remove('show');
             doctorImage.classList.remove('show');
 
-            // Random rotation between 5-10 full spins plus random segment
-            let spinAmount = 1800 + Math.random() * 1800 + Math.random() * 360;
-            const segmentAngle = 45; // 360 / 8 segments
+            const segmentAngle = 360 / segments.length; // 45 degrees
 
-            // Function to calculate winning text from rotation
-            function getWinningText(rotation) {
-                const normalized = rotation % 360;
-                const index = (segments.length - 1 - Math.floor(normalized / segmentAngle) + segments.length) % segments.length;
-                return segments[index].text;
-            }
-
-            // Keep adjusting until we get a different result from last time
-            let predictedResult = getWinningText(currentRotation + spinAmount);
+            // Choose weighted result (but avoid repeats)
+            let chosenResult = weightedRandomResult();
             let attempts = 0;
-            while (predictedResult === lastResult && attempts < 8) {
-                spinAmount += 45; // Move one segment
-                predictedResult = getWinningText(currentRotation + spinAmount);
+            while (chosenResult === lastResult && attempts < 20) {
+                chosenResult = weightedRandomResult();
                 attempts++;
             }
+
+            // Find a segment index matching the chosen result
+            const matchingIndices = [];
+            segments.forEach((s, i) => {
+                if (s.text === chosenResult) matchingIndices.push(i);
+            });
+            const chosenIndex = matchingIndices[Math.floor(Math.random() * matchingIndices.length)];
+
+            // Calculate the rotation needed to land on that segment
+            // The pointer is at the top (0°). Segment i spans from i*segmentAngle to (i+1)*segmentAngle.
+            // We need the wheel to end with segment chosenIndex under the pointer.
+            const segmentCenter = chosenIndex * segmentAngle + segmentAngle / 2;
+            // The winning segment is determined by (segments.length - 1 - floor(normalized / segmentAngle))
+            // So we need: normalized = (segments.length - 1 - chosenIndex) * segmentAngle + random offset within segment
+            const targetNormalized = (segments.length - 1 - chosenIndex) * segmentAngle + Math.random() * (segmentAngle * 0.7) + segmentAngle * 0.15;
+
+            // Add full rotations for visual effect (5-10 spins)
+            const fullSpins = (5 + Math.floor(Math.random() * 6)) * 360;
+            const currentNormalized = currentRotation % 360;
+            let neededRotation = targetNormalized - currentNormalized;
+            if (neededRotation < 0) neededRotation += 360;
+
+            const spinAmount = fullSpins + neededRotation;
 
             currentRotation += spinAmount;
             canvas.style.transform = `rotate(${currentRotation}deg)`;
 
-            // Calculate result after spin
             setTimeout(() => {
-                const finalText = getWinningText(currentRotation);
-
-                lastResult = finalText;
-                resultDiv.textContent = finalText;
+                lastResult = chosenResult;
+                resultDiv.textContent = chosenResult;
                 resultWrapper.classList.add('show');
 
-                // Show doctor image if a doctor was selected
-                if (doctorImages[finalText]) {
-                    doctorImage.src = doctorImages[finalText];
+                if (doctorImages[chosenResult]) {
+                    doctorImage.src = doctorImages[chosenResult];
                     doctorImage.classList.add('show');
                 }
 
-                // Run golden rabbit if "Ask a question" was selected
-                if (finalText === "Ask a question") {
+                if (chosenResult === "Ask a question") {
                     runGoldenRabbit();
                 }
 
-                // Trigger confetti
                 createConfetti();
 
                 isSpinning = false;
@@ -591,11 +843,6 @@
                 btn.textContent = '\u26F6 Fullscreen';
             }
         });
-
-        // Initialize
-        createPegs();
-        drawWheel();
-        spinButton.addEventListener('click', spinWheel);
     </script>
 </body>
 </html>
