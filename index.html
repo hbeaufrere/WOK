@@ -530,18 +530,17 @@
         const clinicians = [
             { name: "Guzman's 2 cents", color: "#3498db", image: "Guzman.png" },
             { name: "Naked mole rat factoids", color: "#9b59b6", image: "Beaufrere.png" },
-            { name: "Keller Time", color: "#e74c3c", image: "Keller.png" },
-            { name: "Dr. Hawkins' last stand", color: "#e91e63", image: "Hawkins.png" }
+            { name: "Keller Time", color: "#e74c3c", image: "Keller.png" }
         ];
 
-        const askColors = ["#f39c12", "#1abc9c", "#2ecc71", "#00bcd4"];
+        const askColors = ["#f39c12", "#1abc9c", "#2ecc71"];
 
         // All setup items: clinicians + Ask a question
         const setupItems = [
             ...clinicians.map(c => ({ name: c.name, color: c.color })),
             { name: "Ask a question", color: "#f39c12" }
         ];
-        const defaultPcts = [10, 10, 10, 10, 60]; // Default percentages
+        const defaultPcts = [10, 10, 10, 70]; // Default percentages
 
         // Probability weights (will be set by setup screen)
         let clinicianWeights = {};
