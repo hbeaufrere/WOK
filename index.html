@@ -488,7 +488,7 @@
 </head>
 <body>
     <button class="fullscreen-button" id="fullscreenBtn" onclick="toggleFullscreen()">&#x26F6; Fullscreen</button>
-    <h1>The Wheel of Knowledge<sup style="font-size: 0.4em; vertical-align: super;">TM</sup></h1>
+    <h1>The Wheel of Knowledge<sup style="font-size: 0.4em; vertical-align: super;">TM</sup><span id="titleSuffix"></span></h1>
 
     <!-- Course Selection Screen -->
     <div class="setup-screen" id="courseScreen">
@@ -555,6 +555,7 @@
             if (course === 'VET437') {
                 const moleRat = clinicians.find(c => c.name === "Naked mole rat factoids");
                 if (moleRat) moleRat.name = "Beaufrere's incredible wisdom";
+                document.getElementById('titleSuffix').textContent = ' (the returns)';
             }
             document.getElementById('courseScreen').style.display = 'none';
             document.getElementById('setupScreen').style.display = 'flex';
