@@ -490,8 +490,18 @@
     <button class="fullscreen-button" id="fullscreenBtn" onclick="toggleFullscreen()">&#x26F6; Fullscreen</button>
     <h1>The Wheel of Knowledge<sup style="font-size: 0.4em; vertical-align: super;">TM</sup></h1>
 
+    <!-- Course Selection Screen -->
+    <div class="setup-screen" id="courseScreen">
+        <h2>Select Course</h2>
+        <p class="setup-info">Choose which course you are running today.</p>
+        <div style="display: flex; gap: 30px; margin-top: 10px;">
+            <button class="start-button" id="vet436Button">VET436</button>
+            <button class="start-button" id="vet437Button">VET437</button>
+        </div>
+    </div>
+
     <!-- Setup Screen: Clinician probability selection -->
-    <div class="setup-screen" id="setupScreen">
+    <div class="setup-screen" id="setupScreen" style="display: none;">
         <h2>Set Probabilities</h2>
         <p class="setup-info">
             Adjust the probability for each option using the sliders or by typing a value.<br>
@@ -526,6 +536,9 @@
     </div>
 
     <script>
+        // Selected course (set on course selection screen)
+        let selectedCourse = null;
+
         // Clinician definitions with new names
         const clinicians = [
             { name: "Guzman's 2 cents", color: "#3498db", image: "Guzman.png" },
@@ -533,73 +546,96 @@
             { name: "Keller Time", color: "#e74c3c", image: "Keller.png" }
         ];
 
+        // Course selection: pick VET436 (default app) or VET437 (custom tweaks)
+        document.getElementById('vet436Button').addEventListener('click', () => selectCourse('VET436'));
+        document.getElementById('vet437Button').addEventListener('click', () => selectCourse('VET437'));
+
+        function selectCourse(course) {
+            selectedCourse = course;
+            if (course === 'VET437') {
+                const moleRat = clinicians.find(c => c.name === "Naked mole rat factoids");
+                if (moleRat) moleRat.name = "Beaufrere's incredible wisdom";
+            }
+            document.getElementById('courseScreen').style.display = 'none';
+            document.getElementById('setupScreen').style.display = 'flex';
+            buildSliders();
+            updateTotal();
+        }
+
         const askColors = ["#f39c12", "#1abc9c", "#2ecc71"];
 
-        // All setup items: clinicians + Ask a question
-        const setupItems = [
-            ...clinicians.map(c => ({ name: c.name, color: c.color })),
-            { name: "Ask a question", color: "#f39c12" }
-        ];
         const defaultPcts = [10, 10, 10, 70]; // Default percentages
+
+        // Setup items computed after course selection (so clinician renames apply)
+        let setupItems = [];
 
         // Probability weights (will be set by setup screen)
         let clinicianWeights = {};
         let askWeight = 60;
 
-        // Build setup screen sliders
+        // DOM refs for setup screen
         const slidersContainer = document.getElementById('clinicianSliders');
         const totalDisplay = document.getElementById('totalDisplay');
         const startButton = document.getElementById('startButton');
 
-        setupItems.forEach((item, i) => {
-            const row = document.createElement('div');
-            row.className = 'slider-row';
+        function buildSliders() {
+            setupItems = [
+                ...clinicians.map(c => ({ name: c.name, color: c.color })),
+                { name: "Ask a question", color: "#f39c12" }
+            ];
 
-            const label = document.createElement('span');
-            label.className = 'slider-label';
-            label.textContent = item.name;
-            label.style.color = item.color;
+            slidersContainer.innerHTML = '';
 
-            const slider = document.createElement('input');
-            slider.type = 'range';
-            slider.min = '0';
-            slider.max = '100';
-            slider.value = String(defaultPcts[i]);
-            slider.step = '0.5';
-            slider.id = 'slider-' + i;
-            slider.style.accentColor = item.color;
-            slider.addEventListener('input', function() {
-                document.getElementById('input-' + i).value = this.value;
-                updateTotal();
+            setupItems.forEach((item, i) => {
+                const row = document.createElement('div');
+                row.className = 'slider-row';
+
+                const label = document.createElement('span');
+                label.className = 'slider-label';
+                label.textContent = item.name;
+                label.style.color = item.color;
+
+                const slider = document.createElement('input');
+                slider.type = 'range';
+                slider.min = '0';
+                slider.max = '100';
+                slider.value = String(defaultPcts[i]);
+                slider.step = '0.5';
+                slider.id = 'slider-' + i;
+                slider.style.accentColor = item.color;
+                slider.addEventListener('input', function() {
+                    document.getElementById('input-' + i).value = this.value;
+                    updateTotal();
+                });
+
+                const numInput = document.createElement('input');
+                numInput.type = 'number';
+                numInput.className = 'slider-input';
+                numInput.min = '0';
+                numInput.max = '100';
+                numInput.step = '0.5';
+                numInput.value = String(defaultPcts[i]);
+                numInput.id = 'input-' + i;
+                numInput.addEventListener('input', function() {
+                    let val = parseFloat(this.value);
+                    if (isNaN(val)) val = 0;
+                    if (val < 0) val = 0;
+                    if (val > 100) val = 100;
+                    document.getElementById('slider-' + i).value = val;
+                    updateTotal();
+                });
+
+                const pctLabel = document.createElement('span');
+                pctLabel.className = 'slider-pct';
+                pctLabel.textContent = '%';
+
+                row.appendChild(label);
+                row.appendChild(slider);
+                row.appendChild(numInput);
+                row.appendChild(pctLabel);
+                slidersContainer.appendChild(row);
             });
-
-            const numInput = document.createElement('input');
-            numInput.type = 'number';
-            numInput.className = 'slider-input';
-            numInput.min = '0';
-            numInput.max = '100';
-            numInput.step = '0.5';
-            numInput.value = String(defaultPcts[i]);
-            numInput.id = 'input-' + i;
-            numInput.addEventListener('input', function() {
-                let val = parseFloat(this.value);
-                if (isNaN(val)) val = 0;
-                if (val < 0) val = 0;
-                if (val > 100) val = 100;
-                document.getElementById('slider-' + i).value = val;
-                updateTotal();
-            });
-
-            const pctLabel = document.createElement('span');
-            pctLabel.className = 'slider-pct';
-            pctLabel.textContent = '%';
-
-            row.appendChild(label);
-            row.appendChild(slider);
-            row.appendChild(numInput);
-            row.appendChild(pctLabel);
-            slidersContainer.appendChild(row);
-        });
+        }
 
         function updateTotal() {
             let total = 0;
@@ -619,8 +655,6 @@
                 startButton.disabled = true;
             }
         }
-
-        updateTotal();
 
         startButton.addEventListener('click', function() {
             // Save weights
@@ -859,7 +893,7 @@
                     doctorImage.classList.add('show');
                 }
 
-                if (chosenResult === "Ask a question") {
+                if (chosenResult === "Ask a question" && selectedCourse !== 'VET437') {
                     runGoldenRabbit();
                 }
 
