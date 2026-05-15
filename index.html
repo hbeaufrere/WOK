@@ -788,39 +788,47 @@
         }
 
         function drawWrappedSegmentText(text, rightX, centerY, halfAngle) {
-            const words = text.split(' ');
-            const lineHeight = 20;
-            const innerLimit = 40;
             const tanHalf = Math.tan(halfAngle);
+            const attempts = [
+                { size: 18, lineHeight: 20, maxLines: 1, innerLimit: 32 },
+                { size: 18, lineHeight: 20, maxLines: 2, innerLimit: 48 },
+                { size: 15, lineHeight: 17, maxLines: 3, innerLimit: 50 },
+                { size: 13, lineHeight: 15, maxLines: 4, innerLimit: 50 },
+                { size: 11, lineHeight: 13, maxLines: 5, innerLimit: 50 }
+            ];
 
-            for (let numLines = 1; numLines <= 5; numLines++) {
-                const startY = -((numLines - 1) * lineHeight) / 2;
+            const words = text.split(' ');
+
+            for (const attempt of attempts) {
+                ctx.font = 'bold ' + attempt.size + 'px Segoe UI, sans-serif';
+                const { lineHeight, maxLines, innerLimit } = attempt;
+                const startY = -((maxLines - 1) * lineHeight) / 2;
                 const lines = [];
                 let wordIdx = 0;
-                let fits = true;
+                let valid = true;
 
-                for (let i = 0; i < numLines; i++) {
+                for (let i = 0; i < maxLines; i++) {
                     const lineY = startY + i * lineHeight;
                     const radialMin = Math.max(innerLimit, Math.abs(lineY) / tanHalf);
                     const maxW = rightX - radialMin;
 
-                    if (maxW <= 0) { fits = false; break; }
+                    if (maxW <= 0) { valid = false; break; }
 
                     let currentLine = '';
                     while (wordIdx < words.length) {
                         const test = currentLine ? currentLine + ' ' + words[wordIdx] : words[wordIdx];
                         if (ctx.measureText(test).width > maxW) {
-                            if (!currentLine) { fits = false; }
+                            if (!currentLine) { valid = false; }
                             break;
                         }
                         currentLine = test;
                         wordIdx++;
                     }
-                    if (!fits) break;
+                    if (!valid) break;
                     lines.push(currentLine);
                 }
 
-                if (fits && wordIdx >= words.length) {
+                if (valid && wordIdx >= words.length) {
                     lines.forEach((line, i) => {
                         ctx.fillText(line, rightX, centerY + startY + i * lineHeight);
                     });
